@@ -1,0 +1,1 @@
+cmd_drivers/media/video/videodev.ko := /home/gjdlfg/kernel/prebuilt/linux-x86/toolchain/arm-eabi-4.4.0/bin/arm-eabi-ld -EL -r  -T /home/gjdlfg/kernel/omap/scripts/module-common.lds --build-id -o drivers/media/video/videodev.ko drivers/media/video/videodev.o drivers/media/video/videodev.mod.o
