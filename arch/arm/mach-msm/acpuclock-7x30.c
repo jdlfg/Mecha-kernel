@@ -42,14 +42,16 @@
 #define dprintk(msg...) \
 	cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "cpufreq-msm", msg)
 
-#define VREF_SEL     1	/* 0: 0.625V (50mV step), 1: 0.3125V (20mV step). */
-#define V_STEP       (20 * (2 - VREF_SEL)) /* Minimum voltage step size. */
+#define VREF_SEL     1	/* 0: 0.625V (50mV step), 1: 0.125V (10mV step). */
+#define V_STEP       (10 * (2 - VREF_SEL)) /* Minimum voltage step size. */
 #define VREG_DATA    (VREG_CONFIG | (VREF_SEL << 5))
 #define VREG_CONFIG  (BIT(7) | BIT(6)) /* Enable VREG, pull-down if disabled. */
 /* Cause a compile error if the voltage is not a multiple of the step size. */
 #define MV(mv)      ((mv) / (!((mv) % V_STEP)))
-/* mv = (650mV + (raw * 20mV)) * (2 - VREF_SEL) */
+/* mv = (650mV + (raw * 10mV)) * (2 - VREF_SEL) */
 #define VDD_RAW(mv) (((MV(mv) / V_STEP) - 30) | VREG_DATA)
+
+
 #define MAX_AXI_KHZ 192000
 
 #define PLL2_L_VAL_ADDR  (MSM_CLK_CTL_BASE + 0x33c)
@@ -80,16 +82,20 @@ static struct clock_state drv_state = { 0 };
 
 static struct cpufreq_frequency_table freq_table[] = {
 	{ 0, 300000 },
-	{ 1, 450000 },
-	{ 2, 600000 },
-	{ 3, 750000 },
-	{ 4, 850000 },
-	{ 5, 950000 },
-	{ 6, 1050000 },
-	{ 7, 1150000 },
-	{ 8, 1250000 },
-	{ 9, 1325000 },
-        { 10, CPUFREQ_TABLE_END },
+	{ 1, 380000 },
+	{ 2, 450000 },
+	{ 3, 512000 },
+	{ 4, 585000 },
+	{ 5, 660000 },
+	{ 6, 730000 },
+	{ 7, 800000 },
+	{ 8, 880000 },
+	{ 9, 950000 },
+	{ 10, 1025000 },
+	{ 11, 1198000 },
+	{ 12, 1269000 },
+	{ 13, 1450000 },
+        { 14, CPUFREQ_TABLE_END },
 };
 
 /* Use negative numbers for sources that can't be enabled/disabled */
@@ -102,17 +108,21 @@ static struct clkctl_acpu_speed acpu_freq_tbl[] = {
 	{ 184320, PLL_3,    5, 4,  61440,  900, VDD_RAW(900) },
       { MAX_AXI_KHZ, SRC_AXI, 1, 0, 61440, 900, VDD_RAW(900) },
 //	{ 245000, PLL_3,    5, 2,  122500, 900, VDD_RAW(900) },
-	{ 300000, PLL_3,    5, 1,  192000, 920, VDD_RAW(920) },
-	{ 450000, PLL_3,    5, 1,  192000, 920, VDD_RAW(920) },
-	{ 600000, PLL_1,    2, 0,  192000, 960, VDD_RAW(960) },
-	{ 750000, PLL_3,    5, 1,  192000, 960, VDD_RAW(960) },
-	{ 850000, PLL_2,    3, 0,  192000, 980, VDD_RAW(980) },
-	{ 950000, PLL_2,    3, 0,  192000, 1000, VDD_RAW(1000) },
-	{ 1050000, PLL_2,    3, 0,  192000, 1040, VDD_RAW(1040) },
-	{ 1150000, PLL_2,    3, 0,  192000, 1080, VDD_RAW(1080) },
-	{ 1250000, PLL_2,    3, 0,  192000, 1140, VDD_RAW(1140) },
-	{ 1325000, PLL_2,    3, 0,  192000, 1180, VDD_RAW(1180) },
-	
+	{ 300000, PLL_3,    5, 1,  192000, 800, VDD_RAW(800) },
+	{ 380000, PLL_3,    5, 1,  192000, 850, VDD_RAW(850) },
+	{ 450000, PLL_1,    2, 0,  192000, 870, VDD_RAW(870) },
+	{ 512000, PLL_3,    5, 1,  192000, 970, VDD_RAW(970) },
+	{ 585000, PLL_2,    3, 0,  192000, 970, VDD_RAW(970) },
+	{ 660000, PLL_2,    3, 0,  192000, 970, VDD_RAW(970) },
+	{ 730000, PLL_2,    3, 0,  192000, 1000, VDD_RAW(1000) },
+	{ 800000, PLL_2,    3, 0,  192000, 1020, VDD_RAW(1020) },
+	{ 880000, PLL_2,    3, 0,  192000, 1020, VDD_RAW(1020) },
+	{ 950000, PLL_2,    3, 0,  192000, 1050, VDD_RAW(1050) },
+	{ 1025000, PLL_2,   3, 0,  192000, 1050, VDD_RAW(1050) },
+	{ 1198000, PLL_2,   3, 0,  192000, 1070, VDD_RAW(1070) },
+	{ 1269000, PLL_2,   3, 0,  192000, 1070, VDD_RAW(1070) },
+	{ 1450000, PLL_2,   3, 0,  192000, 1100, VDD_RAW(1100) },
+          
         {0}
 	
 };
@@ -336,7 +346,7 @@ static unsigned int acpuclk_get_current_vdd(void)
 	unsigned int vdd_mv;
 
 	vdd_raw = msm_spm_get_vdd();
-	for (vdd_mv = 650; vdd_mv <= 1350; vdd_mv += 20)
+	for (vdd_mv = 650; vdd_mv <= 1350; vdd_mv += 10)
 		if (VDD_RAW(vdd_mv) == vdd_raw)
 			break;
 

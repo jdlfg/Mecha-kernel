@@ -42,7 +42,7 @@
 #define dprintk(msg...) \
 	cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "cpufreq-msm", msg)
 
-#define VREF_SEL     1	/* 0: 0.625V (50mV step), 1: 0.3125V (10mV step). */
+#define VREF_SEL     1	/* 0: 0.625V (50mV step), 1: 0.125V (10mV step). */
 #define V_STEP       (10 * (2 - VREF_SEL)) /* Minimum voltage step size. */
 #define VREG_DATA    (VREG_CONFIG | (VREF_SEL << 5))
 #define VREG_CONFIG  (BIT(7) | BIT(6)) /* Enable VREG, pull-down if disabled. */
@@ -108,9 +108,9 @@ static struct clkctl_acpu_speed acpu_freq_tbl[] = {
 	{ 184320, PLL_3,    5, 4,  61440,  900, VDD_RAW(900) },
       { MAX_AXI_KHZ, SRC_AXI, 1, 0, 61440, 900, VDD_RAW(900) },
 //	{ 245000, PLL_3,    5, 2,  122500, 900, VDD_RAW(900) },
-	{ 300000, PLL_3,    5, 1,  192000, 900, VDD_RAW(900) },
-	{ 380000, PLL_3,    5, 1,  192000, 900, VDD_RAW(900) },
-	{ 450000, PLL_1,    2, 0,  192000, 920, VDD_RAW(920) },
+	{ 300000, PLL_3,    5, 1,  192000, 800, VDD_RAW(800) },
+	{ 380000, PLL_3,    5, 1,  192000, 850, VDD_RAW(850) },
+	{ 450000, PLL_1,    2, 0,  192000, 870, VDD_RAW(870) },
 	{ 512000, PLL_3,    5, 1,  192000, 970, VDD_RAW(970) },
 	{ 585000, PLL_2,    3, 0,  192000, 970, VDD_RAW(970) },
 	{ 660000, PLL_2,    3, 0,  192000, 970, VDD_RAW(970) },
